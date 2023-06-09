@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>ALCALDES 2023</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <link media="all" rel="stylesheet"
+        href="https://css2.rtve.es/css/rtve.2019/rtve.compacts/p_final.content.noticias.reportajes.desktp.css"
+        type="text/css">
+
+    <!--<link media="all" rel="stylesheet" href="https://css2.rtve.es/css/rtveplay.2021/rtve.play.grid_rtve.desktp.css"
+        type="text/css">-->
+
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link rel="stylesheet"
+        href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css"
+        type="text/css">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+    <script
+        src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/detectizr/2.2.0/detectizr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"
+        integrity="sha512-wNH6xsp2n8CfB91nrBtfc4sfLwYPBMjSWVUwQOp60AYYXH6i8yCwuKFZ4rgK2i6pQek/b+bSyR7b01/922IBzQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./script06.js"></script>
+    <script src="./script_legend03.js"></script>
+    <script src="https://npmcdn.com/csv2geojson@latest/csv2geojson.js"></script>
+    <link media="all" rel="stylesheet" href="https://css2.rtve.es/css/rtve.2022.noticias/rentas/mapBox_15.desktp.css"
+        type="text/css">
+    <style type="text/css">
+        iframe#_hjRemoteVarsFrame {
+            display: none !important;
+            width: 1px !important;
+            height: 1px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+
+
+    <style id="onetrust-style">
+        .mapboxgl-popup * {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="leyenda"><svg width="300" height="80" class="menu" transform="translate(100,50)">
+            <g class="legendCells" transform="translate(18.8125,15)">
+                <g class="cell" transform="translate(0,0)">
+                    <rect class="swatch" height="15" width="50" style="fill: rgb(165, 0, 38);"></rect><text
+                        class="label" transform="translate(25,
+33)" style="text-anchor: middle;">Menor</text>
+                </g>
+                <g class="cell" transform="translate(52,0)">
+                    <rect class="swatch" height="15" width="50" style="fill: rgb(254, 224, 144);"></rect><text
+                        class="label" transform="translate(25,
+33)" style="text-anchor: middle;"></text>
+                </g>
+                <g class="cell" transform="translate(104,0)">
+                    <rect class="swatch" height="15" width="50" style="fill: rgb(224, 243, 248);"></rect><text
+                        class="label" transform="translate(25,
+33)" style="text-anchor: middle;"></text>
+                </g>
+                <g class="cell" transform="translate(156,0)">
+                    <rect class="swatch" height="15" width="50" style="fill: rgb(49, 54, 149);"></rect><text
+                        class="label" transform="translate(25,
+33)" style="text-anchor: middle;"></text>
+                </g>
+            </g><text class="legendTitle"></text>
+        </svg></div>
+    <div id="map" class="mapboxgl-map">
+        <div class="mapboxgl-canary" style="visibility: hidden;"></div>
+        <div class="mapboxgl-canvas-container mapboxgl-interactive mapboxgl-touch-drag-pan mapboxgl-touch-zoom-rotate">
+            <canvas class="mapboxgl-canvas" tabindex="0" aria-label="Map" role="region" width="512" height="1350"
+                style="width: 256px; height: 675px;"></canvas>
+        </div>
+        <div class="mapboxgl-control-container">
+            <div class="mapboxgl-ctrl-top-left"></div>
+            <div class="mapboxgl-ctrl-top-right">
+                <div class="mapboxgl-ctrl mapboxgl-ctrl-group"><button class="mapboxgl-ctrl-zoom-in" type="button"
+                        title="Zoom in" aria-label="Zoom in" aria-disabled="false"><span class="mapboxgl-ctrl-icon"
+                            aria-hidden="true"></span></button><button class="mapboxgl-ctrl-zoom-out" type="button"
+                        title="Zoom out" aria-label="Zoom out" aria-disabled="false"><span class="mapboxgl-ctrl-icon"
+                            aria-hidden="true"></span></button><button class="mapboxgl-ctrl-compass" type="button"
+                        title="Reset bearing to north" aria-label="Reset bearing to north"><span
+                            class="mapboxgl-ctrl-icon" aria-hidden="true"
+                            style="transform: rotate(0deg);"></span></button>
+                </div>
+                <div class="mapboxgl-ctrl mapboxgl-ctrl-group"><button class="mapboxgl-ctrl-fullscreen" type="button"
+                        aria-label="Enter fullscreen" title="Enter fullscreen"><span class="mapboxgl-ctrl-icon"
+                            aria-hidden="true"></span></button></div>
+            </div>
+            <div class="mapboxgl-ctrl-bottom-left">
+                <div class="mapboxgl-ctrl" style="display: block;"><a class="mapboxgl-ctrl-logo" target="_blank"
+                        rel="noopener nofollow" href="https://www.mapbox.com/" aria-label="Mapbox logo"></a></div>
+            </div>
+            <div class="mapboxgl-ctrl-bottom-right">
+                <div class="mapboxgl-ctrl mapboxgl-ctrl-attrib mapboxgl-compact">
+                    <button class="mapboxgl-ctrl-attrib-button" title="Toggle attribution"
+                        aria-label="Toggle attribution"></button>
+                    <div class="mapboxgl-ctrl-attrib-inner" role="list"><a href="https://www.mapbox.com/about/maps/"
+                            target="_blank" title="Mapbox" aria-label="Mapbox" role="listitem">© Mapbox</a>
+                        <a href="https://www.openstreetmap.org/about/" target="_blank" title="OpenStreetMap"
+                            aria-label="OpenStreetMap" role="listitem">©
+                            OpenStreetMap</a> <a class="mapbox-improve-map"
+                            href="https://apps.mapbox.com/feedback/?owner=datosrtve&amp;id=cl6f6yk79000214td4jnp3m09&amp;access_token=pk.eyJ1IjoiZGF0b3NydHZlIiwiYSI6ImNrczV5YW9sdDI1azUyb3BqZW91ZGRhbzMifQ.0vdRqqdlTOWqrOtg7ldSNQ"
+                            target="_blank" title="Map feedback" aria-label="Map feedback" role="listitem"
+                            rel="noopener nofollow">Improve this map</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="geocoder">
+        <div class="mapboxgl-ctrl-geocoder mapboxgl-ctrl"><svg
+                class="mapboxgl-ctrl-geocoder--icon mapboxgl-ctrl-geocoder--icon-search" viewBox="0 0 18 18"
+                xml:space="preserve" width="18" height="18">
+                <path
+                    d="M7.4 2.5c-2.7 0-4.9 2.2-4.9 4.9s2.2 4.9 4.9 4.9c1 0 1.8-.2 2.5-.8l3.7 3.7c.2.2.4.3.8.3.7 0 1.1-.4 1.1-1.1 0-.3-.1-.5-.3-.8L11.4 10c.4-.8.8-1.6.8-2.5.1-2.8-2.1-5-4.8-5zm0 1.6c1.8 0 3.2 1.4 3.2 3.2s-1.4 3.2-3.2 3.2-3.3-1.3-3.3-3.1 1.4-3.3 3.3-3.3z">
+                </path>
+            </svg>
+            <div class="suggestions-wrapper">
+                <ul class="suggestions" style="display: none;"></ul>
+            </div>
+            <div class="mapboxgl-ctrl-geocoder--pin-right"><button aria-label="Clear"
+                    class="mapboxgl-ctrl-geocoder--button"><svg
+                        class="mapboxgl-ctrl-geocoder--icon mapboxgl-ctrl-geocoder--icon-close" viewBox="0 0 18 18"
+                        xml:space="preserve" width="18" height="18">
+                        <path
+                            d="M3.8 2.5c-.6 0-1.3.7-1.3 1.3 0 .3.2.7.5.8L7.2 9 3 13.2c-.3.3-.5.7-.5 1 0 .6.7 1.3 1.3 1.3.3 0 .7-.2 1-.5L9 10.8l4.2 4.2c.2.3.7.3 1 .3.6 0 1.3-.7 1.3-1.3 0-.3-.2-.7-.3-1l-4.4-4L15 4.6c.3-.2.5-.5.5-.8 0-.7-.7-1.3-1.3-1.3-.3 0-.7.2-1 .3L9 7.1 4.8 2.8c-.3-.1-.7-.3-1-.3z">
+                        </path>
+                    </svg></button><svg class="mapboxgl-ctrl-geocoder--icon mapboxgl-ctrl-geocoder--icon-loading"
+                    viewBox="0 0 18 18" xml:space="preserve" width="18" height="18">
+                    <path fill="#333" d="M4.4 4.4l.8.8c2.1-2.1 5.5-2.1 7.6 0l.8-.8c-2.5-2.5-6.7-2.5-9.2 0z">
+                    </path>
+                    <path opacity=".1"
+                        d="M12.8 12.9c-2.1 2.1-5.5 2.1-7.6 0-2.1-2.1-2.1-5.5 0-7.7l-.8-.8c-2.5 2.5-2.5 6.7 0 9.2s6.6 2.5 9.2 0 2.5-6.6 0-9.2l-.8.8c2.2 2.1 2.2 5.6 0 7.7z">
+                    </path>
+                </svg></div>
+        </div>
+    </div>
+    <button type="button" title="center" class="btn_reset" id="fit"></button>
+    <button type="button" title="center" class="btn_reset" id="spain">Península</button>
+    <button type="button" title="center" class="btn_reset" id="canarias">Canarias</button>
+
+    <!--
+    <div id="vuelos">
+        <button id="spain">España</button>
+        <button id="canarias">Canarias</button>
+    </div>
+    -->
+
+    <nav id="menu">
+        <button id="DataActual" class="menu2020 active">ALCALDES 2023</button>
+        <!--<button id="DataPrevia" class="menuprevia">DataActual</button>-->
+        <button id="VarData" class="menuprevia">LISTA MÁS VOTADA</button>
+        <button id="DataOtros" class="menuprevia">SIN MAYORÍA</button>
+    </nav>
+    </div>
+
+    <script>
+
+        const csvUrl =
+            "https://raw.githubusercontent.com/datosrtve/opendata/main/2023/alcades-2023/alcaldes_es_2019.csv";
+
+        const csvPromise = papaPromise(csvUrl);
+
+        mapboxgl.accessToken = "pk.eyJ1IjoiZGF0b3NydHZlIiwiYSI6ImNrczV5YW9sdDI1azUyb3BqZW91ZGRhbzMifQ.0vdRqqdlTOWqrOtg7ldSNQ";
+
+        var locale = d3.formatLocale({
+            decimal: ",",
+            thousands: ".",
+            grouping: [3]
+        });
+        let partido_alcalde = [];
+        let partido_ganador = [];
+        let data_actual = [];
+        let dataVar = [];
+        let data_previo = [];
+        let dataMunicipio = [];
+        let dataProvincia = [];
+
+        let data_actual_mun = [];
+        let dataVar_Mun = [];
+        let data_previo_mun = [];
+
+
+        let partidoColors = {
+            "PSOE": "#E72727",
+            "PSC CP": "#E72727",
+            "PSN-PSOE": "#E72727",
+            "PP": "#0393d3",
+            "PODEMOS": "#9370DB",
+            "IU PODEMOS": "#9370DB",
+            "MÁS MADRID": "#55f1a7",
+            "COMPROMÍS": "#f39128",
+            "VOX": "#63BE21",
+            "ERC": "#ffc03f",
+            "ERC+SxA-AM": "#ffc03f",
+            "ERC -AM": "#ffc03f",
+            "ERC-AM": "#ffc03f",
+            "ERC-fA-AM": "#ffc03f",
+            "ERC + BCN-NOVA-AM": "#ffc03f",
+            "ERC-INDEPENDENTS-AM": "#ffc03f",
+            "JxM-AM": "#ebcb00",
+            "JUNTS-ERC-AM": "#ffc03f",
+            "JxCat-JUNTS": "#00c4b2",
+            "EAJ-PNV": "#028233",
+            "EH Bildu": "#96c219",
+            "MÁS PAÍS": "#0fddc4",
+            "UPN": "#0065a7",
+            "GEROA BAI": "#d02f12",
+
+        };
+
+
+        let color_escala = d3.scaleThreshold()
+            .range(['#0393d3', '#E72727', '#9370DB', '#63BE21']);
+
+        let color_escala_variacion = d3.scaleThreshold()
+            .range(['#0393d3', '#E72727', '#9370DB', '#63BE21']);
+
+        let color_escala_otros = d3.scaleThreshold()
+            .range(['#0393d3', '#E72727', '#9370DB', '#63BE21', '#FFF8DC']);
+
+        function pintarPopup(dataMap, e, actived) {
+
+            var props = dataMap[0].properties;
+            var state = dataMap[0].state;
+            var layer = dataMap[0].layer.id;
+            let var_Data = '-';
+            let var_Alcalde = '-';
+            let var_DataPrevio = '-';
+            let var_VarData = '';
+            let var_VarData_eval = '';
+
+            if (state.partido_alcalde != 'NA') {
+                var_Data = state.partido_alcalde;
+            } else {
+                var_VarData_eval = 'Sin dato';
+            }
+
+            if (state.alcalde != 'NA') {
+                var_Alcalde = state.alcalde;
+            } else {
+                var_VarData_eval = 'Sin dato';
+            }
+
+            if (state.partido_ganador != 'NA') {
+                var_DataPrevio = state.partido_ganador;
+            } else {
+                var_VarData_eval = 'Sin dato';
+            }
+
+            /*
+            if ((state.d_previo) != 'NA') {
+                var_DataPrevio = Intl.NumberFormat('de-DE').format(state.d_previo);
+            } else {
+                var_VarData_eval = 'Sin dato';
+            }
+            */
+
+
+            if (state.Seccion == undefined) {
+                if ((state.var_mun_anual) != 'NA') {
+                    var_VarData = (state.var_mun_var_anual > 0) ? locale.format(".2f")(state.var_mun_var_anual) : locale.format(".2f")(state.var_mun_var_anual);
+                    if (var_VarData_eval != 'Sin dato') {
+                        var_VarData_eval = var_VarData.substring(0, 1);
+                    }
+                }
+            }
+            //secciones
+            else if ((state.variacion) != 'NA') {
+                var_VarData = (state.variacion > 0) ? locale.format(".2f")(state.variacion) : locale.format(".2f")(state.variacion);
+                if (var_VarData_eval != 'Sin dato') {
+                    var_VarData_eval = var_VarData.substring(0, 1);
+                }
+
+            }
+
+
+            if (state.Municipio == undefined) {
+                var content = "<h2 class='data sin'>Sin datos</h2>";
+            } else if ((state.partido_ganador == 'NA') && (state.partido_alcalde == 'NA')) {
+                var content = "<h4 class='municipio'>" + state.Municipio + "</h4>";
+                //content += "<h3 class='provincia'>" + state.Provincia + "</h3>";
+                content += "<div>" + "<h3 class='provincia'>" + state.var_mun_var_anual + "</h2>" + "</div>";
+                content += "<div>" + "<h2 class='data sin'>Sin datos</h2>" + "</div>";
+            } else {
+                var content = "<h4 class='municipio'>" + state.Municipio + "</h4>";
+                content += "<h3 class='provincia'>" + state.Provincia + "</h3>";
+
+                if (state.Poblacion != undefined) {
+                    var poblacion = parseInt(state.Poblacion);
+                    content += "<h3 class='poblacion'>" + poblacion.toLocaleString('es-ES') + " habitantes </h3>";
+                }
+
+
+
+
+                if (state.Seccion != undefined) {
+                    content += "<h3 class='data seccion'>" + state.Seccion + "</h3>";
+                }
+
+
+                if (actived == '_actual') {
+                    content += "<h2 class='data active'><strong>ALCALDÍA</strong> <span style='color: " + partidoColors[var_Data] + "; font-weight: bold;'>" + var_Data + "</span> " + "</br>" + var_Alcalde + "</h2>";
+                    content += "<h2 class='data'><strong>MÁS VOTADO:</strong> <span style='color: " + partidoColors[var_DataPrevio] + "; font-weight: bold;'>" + var_DataPrevio + "</span> " + "%" + "</h2>";
+
+                }
+
+                else if (actived == '_previa') {
+                    content += "<h2 class='data'><strong>ALCALDÍA:</strong> <span style='color: " + partidoColors[var_Data] + "; font-weight: bold;'>" + var_Data + "</span> " + "</br>" + var_Alcalde + "</h2>";
+                    content += "<h2 class='data active'><strong>MÁS VOTADO:</strong> <span style='color: " + partidoColors[var_DataPrevio] + "; font-weight: bold;'>" + var_DataPrevio + "</span> " + "%" + "</h2>";
+                }
+
+                if (actived == '_varia') {
+                    content += "<h2 class='data'><strong>ALCALDÍA:</strong> <span style='color: " + partidoColors[var_Data] + "; font-weight: bold;'>" + var_Data + "</span> " + "</br>" + var_Alcalde + "</h2>";
+                    content += "<h2 class='data active'><strong>MÁS VOTADO:</strong> <span style='color: " + partidoColors[var_DataPrevio] + "; font-weight: bold;'>" + var_DataPrevio + "</span> " + "%" + "</h2>";
+                }
+
+
+
+            }
+            popup.setLngLat(e.lngLat).setHTML(content).addTo(map);
+            $('.mapboxgl-popup-content').css('border-color', (e.features[0].layer.paint['fill-color']).toString())
+        }
+
+
+        const bounds = [
+            [-104.1059556369808, -7.481376773454173],
+            [106.83154436302016, 68.58881756396005]
+        ]
+
+        let isMobile = false;
+        if (Detectizr.device.type == 'mobile') {
+            isMobile = true;
+        }
+
+        let initialZoom = isMobile ? 4 : 5.8;
+        let initialCenter = isMobile ? [-3.3292966493690983, 40.06720017596038] : [-3.319216382839727, 40.14815887439099];
+
+
+        var map = new mapboxgl.Map({
+            container: "map",
+            style: "mapbox://styles/datosrtve/clb6i4gin003n14nt3vu8daad",
+            zoom: initialZoom,
+            center: initialCenter,
+            maxZoom: 11.9,
+            maxBounds: bounds,
+            cooperativeGestures: true,
+            locale: {
+                "ScrollZoomBlocker.CtrlMessage": "Usa ctrl + scroll para hacer zoom",
+                "ScrollZoomBlocker.CmdMessage": "Use cmd + scroll para hacer zoom",
+                "TouchPanBlocker.Message": "Usa dos dedos para moverte por el mapa"
+
+            },
+            transformRequest: transformRequest,
+        });
+
+        map.getBounds()
+
+        // GEOCODER
+
+        var geocoder = new MapboxGeocoder({
+            accessToken: mapboxgl.accessToken,
+            mapboxgl: mapboxgl,
+            countries: "es",
+            language: "es",
+            types: "region, place, locality",
+            marker: false,
+            placeholder: "Buscar municipios",
+        });
+
+        map.dragRotate.disable();
+        map.touchZoomRotate.disableRotation();
+        map.addControl(new mapboxgl.NavigationControl());
+
+        map.addControl(
+            new mapboxgl.FullscreenControl({
+                container: document.querySelector("body")
+            })
+        );
+
+        document.getElementById("geocoder").appendChild(geocoder.onAdd(map));
+
+        // FINAL DE GEOCODER
+
+        let hoveredStateId = null;
+        let hoveredStateMun = null;
+        let hoveredStateVar = null;
+
+        map.on("load", function () {
+            csvPromise.then(function (results) {
+                //console.table(results.data);
+
+                results.data.forEach((row) => {
+                    var id = 'cod_sec';
+                    if (row.partido_alcalde > 0) data_actual.push(parseInt(row.partido_alcalde));
+                    if (row.partido_ganador > 0) data_previo.push(parseInt(row.partido_ganador));
+                    if (!isNaN(row.variacion)) dataVar.push(parseFloat(row.variacion));
+                    dataMunicipio.push(row.mun);
+                    dataProvincia.push(row.provincia);
+
+                })
+
+                results.data.forEach((row) => {
+                    var id = 'cod_mun';
+                    if (row.partido_alcalde > 0) data_actual_mun.push(parseInt(row.partido_alcalde));
+                    if (row.partido_ganador > 0) data_previo_mun.push(parseInt(row.partido_ganador));
+                    if (!isNaN(row.variacion)) dataVar_Mun.push(parseFloat(row.variacion));
+                    dataMunicipio.push(row.municipio);
+                    dataProvincia.push(row.provincia);
+
+                })
+
+                map.addSource("Municipios_ES", {
+                    type: "vector",
+                    url: "mapbox://datosrtve.da2q4t7c", //"mapbox://datosrtve.34x6feue"
+                    promoteId: "CODIGOINE",
+                });
+
+                results.data.forEach((row) => {
+                    map.setFeatureState(
+                        {
+                            source: "Municipios_ES",
+                            sourceLayer: "Municipios_ES",
+                            id: row.cod_ine,
+                        },
+                        {
+                            alcalde: row.nombre_completo,
+                            partido_alcalde: row.partido_alcalde,
+                            d_previo: row.d_previo,
+                            partido_ganador: row.partido_ganador,
+                            //var_mun_var_anual: row.partido_ganador,
+                            Municipio: row.mun,
+                            Provincia: row.provincia,
+                            Poblacion: row.pob,
+                            segundo: row.segundo,
+                            gobierna: row.gobierna
+                        }
+                    );
+                });
+                initLayers();
+                $('#DataActual').click();
+                $('#distractor').addClass('hddn');
+
+
+            });
+        });
+
+        var initLayers = function () {
+
+            /*MUNICIPIOS*/
+            map.addLayer({
+                id: "Municipios-fill",
+                type: "fill",
+                source: "Municipios_ES",
+                "source-layer": "Municipios_ES",
+                minzoom: 4,
+                maxzoom: 12,
+                layout: {},
+                paint: {
+                    'fill-color': [
+                        'case',
+                        ['==', ["feature-state", "partido_alcalde"], "NA"], "#EDEDEA",
+                        ['==', ["feature-state", "partido_alcalde"], "PSOE"], partidoColors["PSOE"],
+                        ['==', ["feature-state", "partido_alcalde"], "PP"], partidoColors["PP"],
+                        ['==', ["feature-state", "partido_alcalde"], "PODEMOS"], partidoColors["PODEMOS"],
+                        ['==', ["feature-state", "partido_alcalde"], "IU PODEMOS"], partidoColors["IU PODEMOS"],
+                        ['==', ["feature-state", "partido_alcalde"], "MÁS MADRID"], partidoColors["MÁS MADRID"],
+                        ['==', ["feature-state", "partido_alcalde"], "COMPROMÍS"], partidoColors["COMPROMÍS"],
+                        ['==', ["feature-state", "partido_alcalde"], "VOX"], partidoColors["VOX"],
+                        ['==', ["feature-state", "partido_alcalde"], "ERC"], partidoColors["ERC"],
+                        ['==', ["feature-state", "partido_alcalde"], "ERC+SxA-AM"], partidoColors["ERC+SxA-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "ERC -AM"], partidoColors["ERC -AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "ERC-AM"], partidoColors["ERC-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "ERC-fA-AM"], partidoColors["ERC-fA-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "ERC + BCN-NOVA-AM"], partidoColors["ERC + BCN-NOVA-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "ERC-INDEPENDENTS-AM"], partidoColors["ERC-INDEPENDENTS-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "JxM-AM"], partidoColors["JxM-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "JUNTS-ERC-AM"], partidoColors["JUNTS-ERC-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "JxCat-JUNTS"], partidoColors["JxCat-JUNTS"],
+                        ['==', ["feature-state", "partido_alcalde"], "EAJ-PNV"], partidoColors["ERC-fA-AM"],
+                        ['==', ["feature-state", "partido_alcalde"], "EH Bildu"], partidoColors["EH Bildu"],
+                        ['==', ["feature-state", "partido_alcalde"], "MÁS PAÍS"], partidoColors["MÁS PAÍS"],
+                        "#EDEDEA" // default color
+                    ],
+                    "fill-outline-color": "#cdcdcd",
+                    "fill-opacity": 0.9,
+                }
+            }, "aeroway-line");
+
+
+
+            /*VARIACIONES Municipio*/
+            map.addLayer({
+                id: "VariacionesMun-fill",
+                type: "fill",
+                source: "Municipios_ES",
+                "source-layer": "Municipios_ES",
+                minzoom: 4,
+                layout: {},
+                paint: {
+                    'fill-color': [
+                        'case',
+                        ['==', ["feature-state", "partido_ganador"], "NA"], "#EDEDEA",
+                        ['==', ["feature-state", "partido_ganador"], "PSOE"], partidoColors["PSOE"],
+                        ['==', ["feature-state", "partido_ganador"], "PP"], partidoColors["PP"],
+                        ['==', ["feature-state", "partido_ganador"], "PODEMOS"], partidoColors["PODEMOS"],
+                        ['==', ["feature-state", "partido_ganador"], "IU PODEMOS"], partidoColors["IU PODEMOS"],
+                        ['==', ["feature-state", "partido_ganador"], "MÁS MADRID"], partidoColors["MÁS MADRID"],
+                        ['==', ["feature-state", "partido_ganador"], "COMPROMÍS"], partidoColors["COMPROMÍS"],
+                        ['==', ["feature-state", "partido_ganador"], "VOX"], partidoColors["VOX"],
+                        ['==', ["feature-state", "partido_ganador"], "ERC"], partidoColors["ERC"],
+                        ['==', ["feature-state", "partido_ganador"], "ERC+SxA-AM"], partidoColors["ERC+SxA-AM"],
+                        ['==', ["feature-state", "partido_ganador"], "ERC -AM"], partidoColors["ERC -AM"],
+                        ['==', ["feature-state", "partido_ganador"], "ERC-AM"], partidoColors["ERC-AM"],
+                        ['==', ["feature-state", "partido_ganador"], "ERC-fA-AM"], partidoColors["ERC-fA-AM"],
+                        ['==', ["feature-state", "partido_ganador"], "ERC + BCN-NOVA-AM"], partidoColors["ERC + BCN-NOVA-AM"],
+                        ['==', ["feature-state", "partido_ganador"], "ERC-INDEPENDENTS-AM"], partidoColors["ERC-INDEPENDENTS-AM"],
+                        ['==', ["feature-state", "partido_ganador"], "JxM-AM"], partidoColors["JxM-AM"],
+                        ['==', ["feature-state", "partido_ganador"], "JUNTS-ERC-AM"], partidoColors["JUNTS-ERC-AM"],
+                        ['==', ["feature-state", "partido_ganador"], "JxCat-JUNTS"], partidoColors["JxCat-JUNTS"],
+                        ['==', ["feature-state", "partido_ganador"], "EAJ-PNV"], partidoColors["EAJ-PNV"],
+                        ['==', ["feature-state", "partido_ganador"], "EH Bildu"], partidoColors["EH Bildu"],
+                        ['==', ["feature-state", "partido_ganador"], "MÁS PAÍS"], partidoColors["MÁS PAÍS"],
+                        "#EDEDEA" // default color
+                    ],
+                    "fill-outline-color": "#cdcdcd",
+                    "fill-opacity": 0.9,
+                }
+            }, "aeroway-line");
+
+            /*OTROS*/
+            map.addLayer({
+                id: "Otros-fill",
+                type: "fill",
+                source: "Municipios_ES",
+                "source-layer": "Municipios_ES",
+                minzoom: 4,
+                layout: {},
+                paint: {
+                    'fill-color': [
+                        'case',
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "NA"], ['==', ["feature-state", "gobierna"], "Otro"]], "#EDEDEA",
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "PSOE"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["PSOE"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "PP"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["PP"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "PODEMOS"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["PODEMOS"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "IU PODEMOS"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["IU PODEMOS"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "MÁS MADRID"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["MÁS MADRID"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "COMPROMÍS"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["COMPROMÍS"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "VOX"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["VOX"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "ERC"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["ERC"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "ERC+SxA-AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["ERC+SxA-AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "ERC -AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["ERC -AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "ERC-AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["ERC-AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "ERC-fA-AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["ERC-fA-AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "ERC + BCN-NOVA-AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["ERC + BCN-NOVA-AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "ERC-INDEPENDENTS-AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["ERC-INDEPENDENTS-AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "JxM-AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["JxM-AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "JUNTS-ERC-AM"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["JUNTS-ERC-AM"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "JxCat-JUNTS"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["JxCat-JUNTS"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "EAJ-PNV"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["EAJ-PNV"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "EH Bildu"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["EH Bildu"],
+                        ['all', ['==', ["feature-state", "partido_alcalde"], "MÁS PAÍS"], ['==', ["feature-state", "gobierna"], "Otro"]], partidoColors["MÁS PAÍS"],
+
+                        "#EDEDEA" // default color
+                    ],
+
+                    "fill-outline-color": "#cdcdcd",
+                    "fill-opacity": 0.9,
+                },
+                //'filter': ['==', ['get', 'gobierna'], 'Otro']
+                //'filter': ['==', ['to-string', ['get', 'gobierna']], 'Otro']
+            }, "aeroway-line");
+
+
+
+            map.addLayer({
+                id: "Municipios-line",
+                type: "line",
+                minzoom: 4,
+                maxzoom: 12,
+                source: "Municipios_ES",
+                "source-layer": "Municipios_ES",
+                layout: {},
+                paint: {
+                    'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#333333', '#505050'],
+                    "line-width": ['case', ['boolean', ['feature-state', 'hover'], false], 3, 0]
+                },
+            });
+
+            map.addLayer({
+                id: "Otros-line",
+                type: "line",
+                minzoom: 4,
+                maxzoom: 12,
+                source: "Municipios_ES",
+                "source-layer": "Municipios_ES",
+                layout: {},
+                paint: {
+                    'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#333333', '#505050'],
+                    "line-width": ['case', ['boolean', ['feature-state', 'hover'], false], 3, 0.08]
+                },
+            });
+
+
+        }
+
+
+        var updateInProgress = false;
+
+        function vistaMapa() {
+            console.log('vistaMapa llamada, updateInProgress:', updateInProgress);
+            // Si una actualización ya está en progreso, no hacer nada
+            
+            if (updateInProgress) {
+                return;
+            }
+
+            // Marcar que una actualización está en progreso
+            updateInProgress = true;
+
+            // Obtiene todas las características (municipios) en la capa actualmente visible
+            var features = map.queryRenderedFeatures({ layers: ['Municipios-fill'] });
+
+            // Calcula los partidos ganadores
+            var winningParties = calculateWinningParties(features);
+
+            // Actualiza la leyenda
+            updateLegend(winningParties);
+
+            // Marcar que la actualización ha finalizado
+            updateInProgress = false;
+        }
+
+        var lastEventTime = 0;
+
+        map.on('zoomend', function () {
+            var currentTime = Date.now();
+            if (currentTime - lastEventTime > 500) { // Ajusta el valor "500" según tus necesidades
+                vistaMapa();
+                lastEventTime = currentTime;
+                console.log('contador lastEventTime:', lastEventTime);
+            }
+        });
+        map.on('moveend', function () {
+            var currentTime = Date.now();
+            if (currentTime - lastEventTime > 500) {
+                vistaMapa();
+                lastEventTime = currentTime;
+            }
+        });
+        map.on('dragend', function () {
+            var currentTime = Date.now();
+            if (currentTime - lastEventTime > 500) {
+                vistaMapa();
+                lastEventTime = currentTime;
+            }
+        });
+
+
+
+
+        var popup = new mapboxgl.Popup({
+            closeButton: true, //false
+            closeOnClick: false,
+        });
+
+
+        /*POPUP - DEFAULT OPCION*/
+        map.on("mousemove", "Municipios-fill", function (e) {
+            if (e.features.length > 0) {
+                if (hoveredStateMun !== null) {
+                    map.setFeatureState({
+                        source: 'Municipios_ES',
+                        sourceLayer: "Municipios_ES",
+                        id: hoveredStateMun
+                    },
+                        { hover: false }
+                    );
+                }
+                hoveredStateMun = e.features[0].id;
+                map.setFeatureState({
+                    source: 'Municipios_ES',
+                    sourceLayer: "Municipios_ES",
+                    id: hoveredStateMun
+                },
+                    { hover: true }
+                );
+            }
+
+            map.getCanvas().style.cursor = "default";
+
+            var dataMap = map.queryRenderedFeatures(e.point, {
+                layers: ["Municipios-fill"],
+            });
+
+            var data_active = '_actual';
+            pintarPopup(dataMap, e, data_active);
+
+        });
+
+        /*POPUP ACTUAL - DEFAULT OPCION*/
+        map.on("mouseleave", "Municipios-fill", function () {
+
+            if (hoveredStateMun !== null) {
+                map.setFeatureState({
+                    source: 'Municipios_ES',
+                    sourceLayer: "Municipios_ES",
+                    id: hoveredStateMun
+                },
+                    {
+                        hover: false
+                    }
+                );
+            }
+            hoveredStateMun = null;
+
+            map.getCanvas().style.cursor = "";
+            popup.remove();
+        });
+
+        document.getElementById('fit').addEventListener('click', () => {
+            map.fitBounds([
+                /*
+                [-0.1320872786934899, 45.68176311917412],
+                [-7.506169142870249, 34.372511603434376]
+                */
+                [-10.797604824730342, 35.655603392376065],
+                [3.1593484031746755, 43.85076923654901]
+            ]);
+        });
+
+
+        /* POPUP LISTA MÁS VOTADA*/
+        map.on("mousemove", "VariacionesMun-fill", function (e) {
+
+            if (e.features.length > 0) {
+                if (hoveredStateVar !== null) {
+                    map.setFeatureState({
+                        source: 'Municipios_ES',
+                        sourceLayer: "Municipios_ES",
+                        id: hoveredStateVar
+                    },
+                        { hover: false }
+                    );
+                }
+                hoveredStateVar = e.features[0].id;
+                map.setFeatureState({
+                    source: 'Municipios_ES',
+                    sourceLayer: "Municipios_ES",
+                    id: hoveredStateVar
+                },
+                    { hover: true }
+                );
+            }
+
+            map.getCanvas().style.cursor = "default";
+            var dataMap = map.queryRenderedFeatures(e.point, {
+                layers: ["VariacionesMun-fill"],
+            });
+            var actived = "_varia";
+            pintarPopup(dataMap, e, actived);
+
+        });
+
+
+        map.on("mouseleave", "VariacionesMun-fill", function () {
+
+            if (hoveredStateVar !== null) {
+                map.setFeatureState({
+                    source: 'Municipios_ES',
+                    sourceLayer: "Municipios_ES",
+                    id: hoveredStateVar
+                },
+                    {
+                        hover: false
+                    }
+                );
+            }
+            hoveredStateVar = null;
+
+            map.getCanvas().style.cursor = "";
+            popup.remove();
+        });
+
+        /* POPUP OTROS*/
+        map.on("mousemove", "Otros-fill", function (e) {
+
+            if (e.features.length > 0) {
+                if (hoveredStateVar !== null) {
+                    map.setFeatureState({
+                        source: 'Municipios_ES',
+                        sourceLayer: "Municipios_ES",
+                        id: hoveredStateVar
+                    },
+                        { hover: false }
+                    );
+                }
+                hoveredStateVar = e.features[0].id;
+                map.setFeatureState({
+                    source: 'Municipios_ES',
+                    sourceLayer: "Municipios_ES",
+                    id: hoveredStateVar
+                },
+                    { hover: true }
+                );
+            }
+
+            map.getCanvas().style.cursor = "default";
+            var dataMap = map.queryRenderedFeatures(e.point, {
+                layers: ["Otros-fill"],
+            });
+            var actived = "_varia";
+            pintarPopup(dataMap, e, actived);
+
+        });
+
+
+        map.on("mouseleave", "Otros-fill", function () {
+
+            if (hoveredStateVar !== null) {
+                map.setFeatureState({
+                    source: 'Municipios_ES',
+                    sourceLayer: "Municipios_ES",
+                    id: hoveredStateVar
+                },
+                    {
+                        hover: false
+                    }
+                );
+            }
+            hoveredStateVar = null;
+
+            map.getCanvas().style.cursor = "";
+            popup.remove();
+        });
+
+
+
+
+        var canariasBounds = [
+            [-19.82829880098774, 21.929859841625856], //suroeste
+            [-11.83017938181402, 34.43035740227728] //roeste
+        ];
+        const canariasCenter = [
+            (canariasBounds[0][0] + canariasBounds[1][0]) / 2,
+            (canariasBounds[0][1] + canariasBounds[1][1]) / 2
+        ];
+
+        document.getElementById('canarias').addEventListener('click', () => {
+            $("#vuelos button").each((index, value) => {
+                value.style.display = "block";
+            });
+            $("#vuelos #canarias").hide();
+            map.flyTo({
+                center: canariasCenter,
+                zoom: 5.7
+            });
+        });
+
+        document.getElementById('spain').addEventListener('click', () => {
+            $("#vuelos button").each((index, value) => {
+                value.style.display = "block";
+            });
+
+            map.flyTo({
+                center: initialCenter,
+                zoom: initialZoom
+            });
+        });
+
+        function transformRequest(url, resourceType) {
+            var isMapboxRequest =
+                url.slice(8, 22) === "api.mapbox.com" ||
+                url.slice(10, 26) === "tiles.mapbox.com";
+            return {
+                url: isMapboxRequest
+                    ? url.replace("?", "?pluginName=dataJoins&")
+                    : url,
+            };
+        }
+        function papaPromise(url) {
+            return new Promise(function (resolve, reject) {
+                Papa.parse(url, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: resolve,
+                });
+            });
+        }
+
+    </script>
+</body>
+
+</html>
